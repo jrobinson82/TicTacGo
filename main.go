@@ -80,10 +80,6 @@ func main() {
 
 		num, err := strconv.Atoi(input)
 
-		if err != nil {
-			num = -1
-		}
-
 		if input == "q" {
 			validInput = true
 			fmt.Println("Game: Off<")
