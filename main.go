@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	version   = "0.1.0"
+	version   = "0.1.1"
 	moveEmpty = "[ ]"
 	moveX     = "[x]"
 	moveO     = "[o]"
@@ -14,14 +14,56 @@ const (
 	playerO   = "o"
 )
 
-func clearGameBoard(gameBoard []string) {
-	for i := range gameBoard {
-		gameBoard[i] = moveEmpty
+type gameBlock struct {
+	cell  int
+	value string
+}
+
+func editGameBlock(board [][]gameBlock, cell int, value string) {
+	found := false
+
+	for col := range board {
+		if !found {
+			for row := range board[col] {
+				if cell == board[col][row].cell {
+					board[col][row].value = value
+					break
+				}
+			}
+		} else {
+			break
+		}
 	}
 }
 
-func renderGameBoard(gameBoard []string, showCellNumbers ...bool) {
-	i := 0
+func createGameBoard(width, height int) [][]gameBlock {
+	board := make([][]gameBlock, height)
+
+	cell := 1
+
+	for col := 0; col < height; col++ {
+		board[col] = make([]gameBlock, width)
+
+		for row := 0; row < width; row++ {
+			board[col][row].cell = cell
+			board[col][row].value = moveEmpty
+
+			cell++
+		}
+	}
+
+	return board
+}
+
+func clearGameBoard(board [][]gameBlock) {
+	for col := range board {
+		for row := range board[col] {
+			board[col][row].value = moveEmpty
+		}
+	}
+}
+
+func renderGameBoard(board [][]gameBlock, showCellNumbers ...bool) {
 	cellNumbers := false
 
 	if len(showCellNumbers) > 0 {
@@ -30,15 +72,13 @@ func renderGameBoard(gameBoard []string, showCellNumbers ...bool) {
 
 	fmt.Println("")
 
-	for r := 0; r < 3; r++ {
-		for c := 0; c < 3; c++ {
+	for col := range board {
+		for row := range board[col] {
 			if !cellNumbers {
-				fmt.Printf("%s", gameBoard[i])
+				fmt.Printf("%s", board[col][row].value)
 			} else {
-				fmt.Printf("%d%s ", i+1, gameBoard[i])
+				fmt.Printf("%d%s ", board[col][row].cell, board[col][row].value)
 			}
-
-			i++
 		}
 		fmt.Println("")
 	}
@@ -59,7 +99,12 @@ func main() {
 	gameOn := true
 	validInput := false
 	playerTurn := "x"
-	var gameBoard [9]string
+
+	height := 3
+	width := 3
+	cellRange := height * width
+
+	gameBoard := createGameBoard(width, height)
 
 	fmt.Println()
 	fmt.Println("--------------------------------------")
@@ -72,8 +117,8 @@ func main() {
 	fmt.Println(`Type "q" to quit game.`)
 	fmt.Println(`Here are the cell numbers...`)
 
-	clearGameBoard(gameBoard[:])
-	renderGameBoard(gameBoard[:], true)
+	clearGameBoard(gameBoard)
+	renderGameBoard(gameBoard, true)
 
 	fmt.Println("--------------------------------------")
 	fmt.Println("--------------------------------------")
@@ -98,15 +143,15 @@ func main() {
 			if err != nil {
 				fmt.Printf(`"%s" is an invalid command.`, input)
 			} else {
-				if num >= 1 && num <= 9 {
+				if num >= 1 && num <= cellRange {
 
 					switch playerTurn {
 					case playerX:
-						gameBoard[num-1] = moveX
+						editGameBlock(gameBoard, num, moveX)
 						validInput = true
 
 					case playerO:
-						gameBoard[num-1] = moveO
+						editGameBlock(gameBoard, num, moveO)
 						validInput = true
 
 					default:
@@ -114,7 +159,7 @@ func main() {
 					}
 
 				} else {
-					fmt.Printf(`"%d" is out of range. Please select a number between 1 and 9.`, num)
+					fmt.Printf(`"%d" is out of range. Please select a number between 1 and %d.`, num, cellRange)
 				}
 			}
 		}
