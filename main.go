@@ -5,9 +5,18 @@ import (
 	"strconv"
 )
 
+const (
+	version   = "0.1.0"
+	moveEmpty = "[ ]"
+	moveX     = "[x]"
+	moveO     = "[o]"
+	playerX   = "x"
+	playerO   = "o"
+)
+
 func clearGameBoard(gameBoard []string) {
-	for i := 0; i < 9; i++ {
-		gameBoard[i] = "[ ]"
+	for i := range gameBoard {
+		gameBoard[i] = moveEmpty
 	}
 }
 
@@ -56,6 +65,7 @@ func main() {
 	fmt.Println("--------------------------------------")
 	fmt.Println("****** Welcome To TIC TAC [GO]! ******")
 	fmt.Println("--------------------------------------")
+	fmt.Printf("\nVersion %s\n\n", version)
 	fmt.Println("Instructions:")
 	fmt.Println(`When it's you turn type a cell number (1-9)`)
 	fmt.Println(`and press Enter to mark a square.`)
@@ -89,8 +99,20 @@ func main() {
 				fmt.Printf(`"%s" is an invalid command.`, input)
 			} else {
 				if num >= 1 && num <= 9 {
-					validInput = true
-					gameBoard[num-1] = "[" + playerTurn + "]"
+
+					switch playerTurn {
+					case playerX:
+						gameBoard[num-1] = moveX
+						validInput = true
+
+					case playerO:
+						gameBoard[num-1] = moveO
+						validInput = true
+
+					default:
+						// do nothing... for now.
+					}
+
 				} else {
 					fmt.Printf(`"%d" is out of range. Please select a number between 1 and 9.`, num)
 				}
