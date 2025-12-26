@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	version   = "0.1.1"
+	version   = "0.2.0"
 	moveEmpty = "[ ]"
 	moveX     = "[x]"
 	moveO     = "[o]"
@@ -17,6 +17,73 @@ const (
 type gameBlock struct {
 	cell  int
 	value string
+}
+
+func isPlayerWinner(board [][]gameBlock, player string) bool {
+	isWinner := false
+	var move string
+
+	if player == playerX {
+		move = moveX
+	} else {
+		move = moveO
+	}
+
+	// Handles 3 by 3 winds only...
+
+	// --- Check rows ---
+	for r := 0; r < 3; r++ {
+		isWinner = true
+		for c := 0; c < 3; c++ {
+			if board[c][r].value != move {
+				isWinner = false
+				break
+			}
+		}
+		if isWinner {
+			break
+		}
+	}
+
+	// --- Check columns ---
+	if !isWinner {
+		for c := 0; c < 3; c++ {
+			isWinner = true
+			for r := 0; r < 3; r++ {
+				if board[c][r].value != move {
+					isWinner = false
+					break
+				}
+			}
+			if isWinner {
+				break
+			}
+		}
+	}
+
+	// --- Check diagonal (top-left → bottom-right) ---
+	if !isWinner {
+		isWinner = true
+		for i := 0; i < 3; i++ {
+			if board[i][i].value != move {
+				isWinner = false
+				break
+			}
+		}
+	}
+
+	// --- Check diagonal (top-right → bottom-left) ---
+	if !isWinner {
+		isWinner = true
+		for i := 0; i < 3; i++ {
+			if board[2-i][i].value != move {
+				isWinner = false
+				break
+			}
+		}
+	}
+
+	return isWinner
 }
 
 func editGameBlock(board [][]gameBlock, cell int, value string) {
@@ -169,7 +236,13 @@ func main() {
 		fmt.Println()
 
 		if validInput {
-			turnToggle(&playerTurn)
+			if !isPlayerWinner(gameBoard, playerTurn) {
+				turnToggle(&playerTurn)
+			} else {
+				renderGameBoard(gameBoard[:])
+				fmt.Printf(`Player "%s" Wins!`, playerTurn)
+				gameOn = false
+			}
 		}
 	}
 }
